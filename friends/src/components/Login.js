@@ -14,7 +14,7 @@ const Login = ()=>{
     const login = (e) => {
         e.preventDefault()
         console.log(form)
-        Axios.post('/login', form)
+        Axios.post('http://localhost:5000/api/login', form)
             .then(res=> {
                 console.log(res.data)
                 localStorage.setItem('token', res.data.payload)

@@ -1,47 +1,58 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { axiosWithAuth } from '../utils/axiosWithAuth';
 
-const initialState = {
-    name: "",
-    age: "",
-    email: "",
-}
 
-const AddNewFriend = (props)=>{
-    const [newFriend, setNewFriend] = useState(initialState)
-    const {tab, setTab, setFriends} = props
+const AddMyFriend = (props)=>{
+    const {tab, editing, myFriend, addFriend, editFriend } = props
 
-    const addFriend = (e)=>{
+    const friendHandler = (e)=>{
         e.preventDefault()
         const friend = {
-            name: newFriend.name,
-            age: newFriend.age,
-            email: newFriend.email,
+            name: myFriend.name,
+            age: +myFriend.age,
+            email: myFriend.email,
         }
-        axiosWithAuth()
-            .post("/friends", friend)
-            .then(res =>{
-                console.log(res.data)
-                setFriends(res.data)
-            })
-            .catch(err => console.dir(err))
-        setTab(false)
+
+        if(friend.name === "" && friend.age === 0 && friend.email === ""){
+            setTab(false); setEdit(false)
+        }
+        else if(!editing){
+            axiosWithAuth()
+                .post("/friends", friend)
+                .then(res =>{
+                    console.log(res.data)
+                    setFriends(res.data)
+                })
+                .catch(err => console.dir(err))
+            setTab(false)
+        }
+        else{
+            axiosWithAuth()
+                .put(`/friends/${myFriend.id}`, friend)
+                .then(res =>{
+                    console.log(res.data)
+                    setFriends(res.data)
+                    setEdit(false)
+                })
+                .catch(err => console.dir(err))
+            setTab(false)
+        }
     }
 
     const handleChange = e => {
-        setNewFriend({...newFriend, [e.target.name]:e.target.value})
+        myFriend={...myFriend, [e.target.name]:e.target.value}
     }
 
     return(
         <div style={{borderTop:"1px solid black", borderBottom:"1px solid black", margin:"2% 0"}} >
-            <form onSubmit={(e)=>addFriend(e)} style={{display: `${tab ? "block" : "none"}`}} >
-                Name: <input type="text" name="name" value={newFriend.name} onChange={(e)=> handleChange(e)} /><br/>
-                Age: <input type="text" name="age" value={newFriend.age} onChange={(e)=> handleChange(e)} /><br/>
-                Email: <input type="text" name="email" value={newFriend.email} onChange={(e)=> handleChange(e)} /><br/>
-                <input type="submit" value="Add Friend" />
+            <form onSubmit={(e)=>friendHandler(e)} style={{display: `${tab ? "block" : "none"}`}} id="friendForm" >
+                Name: <input type="text" name="name" value={myFriend.name} onChange={(e)=> handleChange(e)} /><br/>
+                Age: <input type="number" name="age" value={myFriend.age} onChange={(e)=> handleChange(e)} /><br/>
+                Email: <input type="text" name="email" value={myFriend.email} onChange={(e)=> handleChange(e)} /><br/>
+                <input type="submit" value={editing ? "Edit Friend" : "Add Friend"} />
             </form>
         </div>
     )
 }
 
-export default AddNewFriend
+export default AddMyFriend
